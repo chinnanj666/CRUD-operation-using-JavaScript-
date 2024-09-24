@@ -3,12 +3,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from .models import Book
 import json
+from django.core.serializers import serialize
 
 @csrf_exempt
 def book_list(request):
     if request.method == 'GET':
-        books = Book.objects.all().values()
-        return JsonResponse(list(books), safe=False)
+        books = Book.objects.all()
+        data = json.loads(serialize('json', books))
+        return JsonResponse(data, safe=False)
     
     elif request.method == 'POST':
         data = json.loads(request.body)
@@ -24,7 +26,7 @@ def book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
     
     if request.method == 'GET':
-        data = {"id": book.id, "title": book.title, "author": book.author, "publication_date": book.publication_date}
+        data = {"id": book.id, "title": book.title, "author": book.author, "publication_date": str(book.publication_date)}
         return JsonResponse(data)
     
     elif request.method == 'PUT':
